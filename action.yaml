@@ -1,0 +1,81 @@
+name: aws-helm-deploy
+description: Deploy a Helm chart from ECR to an EKS cluster
+inputs:
+  aws-region:
+    required: true
+    description: 'The AWS region where the EKS cluster is located'
+  aws-account-id:
+    required: true
+    description: 'The AWS account ID where the ECR repository is located'
+  aws-role-name-to-assume:
+    required: true
+    description: 'The name of the role to assume in the AWS account'
+  chart-name:
+    required: true
+    description: 'The name of the Helm chart to deploy'
+  chart-version:
+    required: true
+    description: 'The version of the Helm chart to deploy'
+  cluster-name:
+    required: true
+    description: 'The name of the EKS cluster to deploy the Helm chart to'
+  cluster-region:
+    required: false
+    description: 'The region of the EKS cluster to deploy the Helm chart to'
+  helm-ecr-account-id:
+    required: true
+    description: 'The AWS account ID where the ECR repository is located'
+  helm-ecr-region:
+    required: false
+    description: 'The AWS region where the ECR repository is located'
+  helm-release-name:
+    required: true
+    description: 'The name of the Helm release'
+  image-tag:
+    required: true
+    description: 'The tag of the Docker image to deploy'
+  namespace:
+    required: true
+    description: 'The namespace to deploy the Helm chart to'
+  values:
+    required: true
+    description: 'The path to the values file for the Helm chart'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+
+    - uses: azure/setup-helm@v4
+
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.aws-role-name-to-assume }}
+
+    - name: Add EKS cluster to kubeconfig
+      shell: bash
+      run: aws eks update-kubeconfig --name ${{ inputs.cluster-name }} --region ${{ inputs.cluster-region || inputs.aws-region }}
+
+    - name: Login to ECR
+      id: ecr
+      uses: aws-actions/amazon-ecr-login@v2
+      env:
+        AWS_REGION: ${{ inputs.helm-ecr-region || inputs.aws-region }}
+      with:
+        registries: ${{ inputs.helm-ecr-account-id || inputs.aws-account-id }}
+
+    - name: Deploy helm chart
+      shell: bash
+      env:
+        OCI_CHART: oci://${{ steps.ecr.outputs.registry }}/${{ inputs.chart-name }}
+      run: |
+        helm upgrade ${{ inputs.helm-release-name }} \
+        $OCI_CHART \
+        --install \
+        --timeout 0 \
+        --values ${{ inputs.values }} \
+        --namespace ${{ inputs.namespace }} \
+        --set global.image.tag=${{ inputs.image-tag }} \
+        --dependency-update \
+        --version ${{ inputs.chart-version }}
