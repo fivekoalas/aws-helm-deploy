@@ -14,6 +14,8 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - uses: actions/checkout@v4
+
       - uses: fivekoalas/aws-helm-deploy@v1
         with:
           aws-region: "us-east-1"

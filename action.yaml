@@ -44,8 +44,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/checkout@v4
-
     - uses: azure/setup-helm@v4
 
     - uses: aws-actions/configure-aws-credentials@v4
