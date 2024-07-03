@@ -31,12 +31,12 @@ inputs:
   helm-release-name:
     required: true
     description: 'The name of the Helm release'
-  image-tag:
-    required: true
-    description: 'The tag of the Docker image to deploy'
   namespace:
     required: true
     description: 'The namespace to deploy the Helm chart to'
+  set-values:
+    required: false
+    description: 'Coma-separated list of key=value pairs to set in the Helm chart values file using --set'
   values:
     required: true
     description: 'The path to the values file for the Helm chart'
@@ -74,6 +74,6 @@ runs:
         --timeout 0 \
         --values ${{ inputs.values }} \
         --namespace ${{ inputs.namespace }} \
-        --set global.image.tag=${{ inputs.image-tag }} \
+        --set ${{ inputs.set-values }} \
         --dependency-update \
         --version ${{ inputs.chart-version }}
