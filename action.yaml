@@ -71,7 +71,6 @@ runs:
         helm upgrade ${{ inputs.helm-release-name }} \
         $OCI_CHART \
         --install \
-        --timeout 0 \
         --values ${{ inputs.values }} \
         --namespace ${{ inputs.namespace }} \
         --set ${{ inputs.set-values }} \
