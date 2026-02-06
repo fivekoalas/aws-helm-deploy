@@ -46,7 +46,7 @@ runs:
   steps:
     - uses: azure/setup-helm@v4
 
-    - uses: aws-actions/configure-aws-credentials@v6
+    - uses: aws-actions/configure-aws-credentials@v5
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.aws-role-name-to-assume }}
