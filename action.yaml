@@ -44,7 +44,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: azure/setup-helm@v4
+    - uses: azure/setup-helm@v5
 
     - uses: aws-actions/configure-aws-credentials@v5
       with:
